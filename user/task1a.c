@@ -18,8 +18,12 @@ int main() {
     else { // parent
         printf("Parent pid: %d\nChild pid: %d\n", getpid(), pid);
         int status;
-        wait(&status);
-        printf("The process %d was completed with a code %d\n", pid, status);
+        int wpid = wait(&status);
+        if (wpid < 0) {
+            fprintf(2, "wait failed\n");
+            exit(1);
+        }
+        printf("The process %d was completed with a code %d\n", wpid, status & 0xFF);
         exit(0);
     }
     return 0;

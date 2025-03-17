@@ -17,10 +17,22 @@ int main(int argc, char *argv[]) {
         exit(1);
     } 
     else if (pid == 0) { // child
-        close(pipefd[1]);
-        close(0);
-        dup(pipefd[0]);
-        close(pipefd[0]);
+        if(close(pipefd[1]) < 0) {
+			fprintf(2, "Error when close pipe\n");
+			exit(1);
+		}
+		if(close(0) < 0) {
+			fprintf(2, "Error when close stdin\n");
+			exit(1);
+		}
+		if(dup(pipefd[0]) < 0) {
+			fprintf(2, "Error when call dup\n");
+			exit(1);
+		}
+		if(close(pipefd[0]) < 0) {
+			fprintf(2, "Error when close pipe\n");
+			exit(1);
+		}
         char *args[] = {"/wc", 0};
         if (exec("/wc", args) < 0) {
             fprintf(2, "Error to call wc\n");
@@ -28,7 +40,10 @@ int main(int argc, char *argv[]) {
         }
     } 
     else { // parent
-        close(pipefd[0]);
+        if(close(pipefd[0]) < 0) {
+			fprintf(2, "Error when close pipe\n");
+			exit(1);
+		}
         char buf[BUF_SIZE];
         int pos = 0, lenght2;
 
@@ -60,7 +75,7 @@ int main(int argc, char *argv[]) {
                 }
 			}
 			else {
-				memmove(buf + pos, argv[i], length);
+                memcpy(buf + pos, argv[i], length);
 				pos += length;
 			}
 			buf[pos] = '\n';
@@ -81,7 +96,7 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        if( close(pipefd[1]) < 0){
+        if (close(pipefd[1]) < 0){
             fprintf(2, "Error to close pipe\n");
             exit(1);
         }
