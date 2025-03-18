@@ -100,3 +100,15 @@ uint64 sys_add(void) {
   
   return x + y;
 }
+
+uint64
+sys_ps_listinfo(void)
+{
+  uint64 plist;
+  int lim;
+
+  argaddr(0, &plist);
+  argint(1, &lim);
+
+  return ps_listinfo((struct procinfo *)plist, lim);
+}

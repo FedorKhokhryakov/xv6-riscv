@@ -5,6 +5,7 @@
 #include "spinlock.h"
 #include "proc.h"
 #include "defs.h"
+#include "procinfo.h"
 
 struct cpu cpus[NCPU];
 
@@ -693,3 +694,64 @@ procdump(void)
     printf("\n");
   }
 }
+
+int ps_listinfo(struct procinfo *plist, int lim) {
+  struct proc *p;
+  struct procinfo pinf;
+  int cnt = 0;
+
+  acquire(&wait_lock);
+
+  for (p = proc; p < &proc[NPROC]; p++) {
+      acquire(&p->lock);
+
+      if (p->state == USED || p->state == UNUSED) {
+        release(&p->lock);
+        continue;
+      }
+
+      if (!plist) {
+        cnt++;
+        release(&p->lock);
+        continue;
+      }
+
+      if (cnt >= lim) {
+        release(&p->lock);
+        return cnt + 1;
+      }
+
+      pinf.pid = p->pid;
+      switch (p->state) {
+        case SLEEPING:  pinf.state = PSLEEPING;  break;
+        case RUNNABLE:  pinf.state = PRUNNABLE;  break;
+        case RUNNING:   pinf.state = PRUNNING;   break;
+        case ZOMBIE:    pinf.state = PZOMBIE;    break;
+        default:        pinf.state = -1;
+      }
+
+      safestrcpy(pinf.name, p->name, sizeof(pinf.name));
+
+      if (p->parent) {
+        safestrcpy(pinf.pname, p->parent->name, sizeof(pinf.pname));
+        pinf.ppid = p->parent->pid;
+      } 
+      else {
+        pinf.ppid = 0;
+        pinf.pname[0] = '\0';
+      }
+
+      if (copyout(myproc()->pagetable, (uint64)(plist + cnt), (char *)&pinf, sizeof(pinf)) < 0) {
+        release(&p->lock);
+        release(&wait_lock);
+        return -2;
+      }
+
+      cnt++;
+      release(&p->lock);
+  }
+
+  release(&wait_lock);
+  return cnt;
+}
+
