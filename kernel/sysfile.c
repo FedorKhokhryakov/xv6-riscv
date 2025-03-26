@@ -18,8 +18,7 @@
 
 // Fetch the nth word-sized system call argument as a file descriptor
 // and return both the descriptor and the corresponding struct file.
-static int
-argfd(int n, int *pfd, struct file **pf)
+int argfd(int n, int *pfd, struct file **pf)
 {
   int fd;
   struct file *f;
@@ -36,8 +35,7 @@ argfd(int n, int *pfd, struct file **pf)
 
 // Allocate a file descriptor for the given file.
 // Takes over file reference from caller on success.
-static int
-fdalloc(struct file *f)
+int fdalloc(struct file *f)
 {
   int fd;
   struct proc *p = myproc();

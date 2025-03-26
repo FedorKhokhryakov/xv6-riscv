@@ -79,7 +79,11 @@ fileclose(struct file *f)
     begin_op();
     iput(ff.ip);
     end_op();
-  }
+  } else if (ff.type == FD_MUTEX) {
+    f->type = FD_MUTEX;
+    mutexclose(f);
+    f->type = FD_NONE;
+	}
 }
 
 // Get metadata about file f.
@@ -90,7 +94,9 @@ filestat(struct file *f, uint64 addr)
   struct proc *p = myproc();
   struct stat st;
   
-  if(f->type == FD_INODE || f->type == FD_DEVICE){
+  if (f->type == FD_MUTEX) {
+    return -1;
+  } else if(f->type == FD_INODE || f->type == FD_DEVICE){
     ilock(f->ip);
     stati(f->ip, &st);
     iunlock(f->ip);
@@ -122,6 +128,8 @@ fileread(struct file *f, uint64 addr, int n)
     if((r = readi(f->ip, 1, addr, f->off, n)) > 0)
       f->off += r;
     iunlock(f->ip);
+  } else if (f->type == FD_MUTEX){
+      return -1; 
   } else {
     panic("fileread");
   }
@@ -173,6 +181,8 @@ filewrite(struct file *f, uint64 addr, int n)
       i += r;
     }
     ret = (i == n ? n : -1);
+  } else if (f->type == FD_MUTEX){
+    return -1; 
   } else {
     panic("filewrite");
   }
