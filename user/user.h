@@ -23,6 +23,8 @@ char* sbrk(int);
 int sleep(int);
 int uptime(void);
 int add(int, int);
+int show_page_table(void*, int, int);
+int clear_flags(void*, int, int);
 
 // ulib.c
 int stat(const char*, struct stat*);
