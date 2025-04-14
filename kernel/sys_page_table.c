@@ -58,7 +58,7 @@ void print_pagetable(pagetable_t pagetable, int level, uint64 buf_st, int len, i
         rounded_buf = PGROUNDDOWN(buf_st);
         pte_t *pte = (buf_st == 0) ? &pagetable[i] : &pagetable[(rounded_buf / sizeof_block) % 512];
         
-        int flag_validation = (((flags == A_FLAG) && (*pte & PTE_A)) || ((flags == D_FLAG) && (*pte & PTE_D)) || (flags == ALL_FLAGS));
+        int flag_validation = (((flags == PT_SHOW_ACCESSED) && (*pte & PTE_A)) || ((flags == PT_SHOW_DIRTY) && (*pte & PTE_D)) || ((flags == PT_SHOW_ALL) && (*pte & (PTE_A | PTE_D))));
         
         if ((*pte & PTE_V) && (level > 0 || flag_validation)) {
             print_pte_entry(level, i, pte);
@@ -100,7 +100,7 @@ void delete_flags(pagetable_t pagetable, int level, uint64 buf_st, int len, int 
         else
             pte = &pagetable[(rounded_buf / sizeof_block) % 512];
 
-        int flag_validation = (((flags == A_FLAG) && (*pte & PTE_A)) || ((flags == D_FLAG) && (*pte & PTE_D)) || (flags == ALL_FLAGS));
+        int flag_validation = (((flags == PT_SHOW_ACCESSED) && (*pte & PTE_A)) || ((flags == PT_SHOW_DIRTY) && (*pte & PTE_D)) || ((flags == PT_SHOW_ALL) && (*pte & (PTE_A | PTE_D))));
 
         if ((*pte & PTE_V) && (level > 0 || flag_validation)){
             if(flags == A_FLAG)
@@ -141,7 +141,7 @@ sys_show_page_table(void)
     argint(1, &len);
     argint(2, &flags);
 
-    if (flags & ~(D_FLAG | A_FLAG))
+    if (flags < 0 || flags > (PT_SHOW_ACCESSED | PT_SHOW_DIRTY))
         return -1;
 
     struct proc *p = myproc();
@@ -167,7 +167,7 @@ sys_clear_flags(void)
     argint(1, &len);
     argint(2, &flags);
 
-    if (flags & ~(D_FLAG | A_FLAG))
+    if (flags <= 0 || flags > (PT_CLEAR_ACCESSED | PT_CLEAR_DIRTY))
         return -1;
 
     struct proc *p = myproc();

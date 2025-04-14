@@ -1,3 +1,10 @@
+#define PT_SHOW_ALL      0
+#define PT_SHOW_ACCESSED (1 << 0)
+#define PT_SHOW_DIRTY    (1 << 1)
+
+#define PT_CLEAR_ACCESSED (1 << 0)
+#define PT_CLEAR_DIRTY    (1 << 1)
+
 // Saved registers for kernel context switches.
 struct context {
   uint64 ra;

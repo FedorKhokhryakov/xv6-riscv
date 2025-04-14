@@ -1,3 +1,12 @@
+#define SHOW_PT_ALL      0
+#define SHOW_PT_ACCESSED (1 << 0)
+#define SHOW_PT_DIRTY    (1 << 1)
+#define SHOW_PT_BOTH     (SHOW_PT_ACCESSED | SHOW_PT_DIRTY)
+
+#define CLEAR_PT_ACCESSED (1 << 0)
+#define CLEAR_PT_DIRTY    (1 << 1)
+#define CLEAR_PT_BOTH     (CLEAR_PT_ACCESSED | CLEAR_PT_DIRTY)
+
 struct stat;
 
 // system calls
