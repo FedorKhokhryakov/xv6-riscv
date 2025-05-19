@@ -100,3 +100,7 @@ uint64 sys_add(void) {
   
   return x + y;
 }
+
+uint64 sys_rtc(void) {
+  return rtc_read();
+ } 
